@@ -6,11 +6,31 @@ let current = 0
 
 makeFakeSlides()
 $sliders.css({transform: 'translateX(-400px)'})
-bingEvents()
+//bingEvents()
 
+$('#buttonWrapper').on('click', 'button', function(e){
+    let $button = $(e.currentTarget)
+    let index = $button.index()
+    goToSlide(index)
+})
 
+$('#previous').on('click', function(){
+    goToSlide(current - 1)
+})
+$('#next').on('click', function(){
+    goToSlide(current + 1)
+})
 
-
+let timer = setInterval(function(){
+    goToSlide(current + 1)
+}, 1000)
+$('.container').on('mouseenter', function(){
+    clearInterval(timer)
+}).on('mouseleave', function(){
+    timer = setInterval(function(){
+        goToSlide(current + 1)
+    }, 1000)    
+})
 
 
 
@@ -25,39 +45,29 @@ function makeFakeSlides(){
     $sliders.prepend($lastCopy)
 } //闭包
 
-function bingEvents(){
-    $buttons.eq(0).on('click', function(){
-        if(current == 2){
-            console.log('从第三张到第一张')
-            $sliders.css({transform: 'translateX(-1600px)'})
-                .one('transitionend', function(){
-                    $sliders.hide()
-                        .offset()
-                    $sliders.css({transform: 'translateX(-400px)'}).show()
-                })
-        }else{
-            $sliders.css({transform: 'translateX(-400px)'})
-        }
-        current = 0
-    })
-    $buttons.eq(1).on('click', function(){
-        console.log(current)
-        $sliders.css({transform: 'translateX(-800px)'})
-        current = 1
-    })
-    $buttons.eq(2).on('click', function(){
-        if(current == 0){
-            console.log('从第一张到第三张')
-            $sliders.css({transform: 'translateX(0px)'})
+function goToSlide(index){
+    if(index > $buttons.length - 1){
+        index = 0
+    }else if(index < 0){
+        index = $buttons.length - 1
+    }
+
+    if(current === $buttons.length - 1 && index === 0){
+        //最后一张到第一张
+        $sliders.css({transform: `translateX(${- ($buttons.length+1) * 400}px)`})
             .one('transitionend', function(){
-                $sliders.hide()
-                    .offset()
-                $sliders.css({transform: 'translateX(-1200px)'}).show()
+                $sliders.hide().offset()
+                $sliders.css({transform: `translateX(-400px)`}).show()
             })
-    
-        }else{
-            $sliders.css({transform: 'translateX(-1200px)'})
-        }
-        current = 2
-    })
+    }else if(current === 0 && index === $buttons.length - 1){
+        //第一张到最后一张
+        $sliders.css({transform: `translateX(0)`})
+        .one('transitionend', function(){
+            $sliders.hide().offset()
+            $sliders.css({transform: `translateX(${-(index + 1) * 400}px)`}).show()
+        })
+    }else{
+        $sliders.css({transform: `translateX(${-(index+1) * 400}px)`})
+    }
+    current = index
 }
